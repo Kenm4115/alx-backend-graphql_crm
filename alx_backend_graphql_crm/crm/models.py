@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Customer(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -19,10 +20,20 @@ class Product(models.Model):
 
 
 class Order(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="orders")
+    customer = models.ForeignKey(
+        Customer, on_delete=models.CASCADE, related_name="orders")
     products = models.ManyToManyField(Product, related_name="orders")
     order_date = models.DateTimeField(auto_now_add=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0)
+
+    def calculate_total(self):
+        return sum([p.price for p in self.products.all()])
+
+    def save(self, *args, **kwargs):
+        if self.pk:  # only calculate after products are assigned
+            self.total_amount = self.calculate_total()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Order {self.id} - {self.customer.name}"
+        return f"Order {self.id} by {self.customer.name}"
