@@ -1,3 +1,5 @@
+from .models import Product
+from graphene_django.types import DjangoObjectType
 from .filters import CustomerFilter, ProductFilter, OrderFilter
 from graphene_django.filter import DjangoFilterConnectionField
 import re
@@ -229,3 +231,44 @@ class Query(graphene.ObjectType):
         if order_by:
             qs = qs.order_by(*order_by)
         return qs
+
+
+class ProductType(DjangoObjectType):
+    class Meta:
+        model = Product
+        fields = ("id", "name", "price", "stock")
+
+
+class UpdateLowStockProducts(graphene.Mutation):
+    class Arguments:
+        pass  # No arguments needed
+
+    success = graphene.Boolean()
+    message = graphene.String()
+    updated_products = graphene.List(ProductType)
+
+    def mutate(self, info):
+        low_stock_products = Product.objects.filter(stock__lt=10)
+        updated_products = []
+
+        for product in low_stock_products:
+            product.stock += 10  # simulate restocking
+            product.save()
+            updated_products.append(product)
+
+        if updated_products:
+            return UpdateLowStockProducts(
+                success=True,
+                message=f"Restocked {len(updated_products)} products",
+                updated_products=updated_products
+            )
+        else:
+            return UpdateLowStockProducts(
+                success=False,
+                message="No low-stock products found",
+                updated_products=[]
+            )
+
+
+class Mutation(graphene.ObjectType):
+    update_low_stock_products = UpdateLowStockProducts.Field()
