@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'crm',
     'django_filters',
     'django_crontab',
-    'django-celery-beat',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
