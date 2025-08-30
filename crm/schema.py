@@ -1,4 +1,3 @@
-from .models import Product
 from graphene_django.types import DjangoObjectType
 from .filters import CustomerFilter, ProductFilter, OrderFilter
 from graphene_django.filter import DjangoFilterConnectionField
@@ -7,6 +6,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from django.db import transaction
 from .models import Customer, Product, Order
+from crm.models import Product
 
 # -------------------
 # GraphQL Types
